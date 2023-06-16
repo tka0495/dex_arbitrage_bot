@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
@@ -26,30 +27,37 @@ db = Database('database.db')
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
     if message.chat.type == 'private':
-        await bot.send_message(message.from_user.id, message.from_user.id)
+        # await bot.send_message(message.from_user.id, message.from_user.id)
         if not db.user_exists(message.from_user.id):
             db.add_user(message.from_user.id)
-        while True:
-            with open(os.path.join('/Users','default','Desktop','Projects', 'DEX-bot', 'venv', 'test.txt'), 'r') as f:
-                text = f.read()
-            await bot.send_message(message.from_user.id, text)
-            await asyncio.sleep(10)
+        # while True:
+        #     with open(os.path.join('/Users','default','Desktop','Projects', 'DEX-bot', 'venv', 'test.txt'), 'r') as f:
+        #         text = f.read()
+        #     await bot.send_message(message.from_user.id, text)
+        #     await asyncio.sleep(10)
 
 
 @dp.message_handler()
 async def on_startup():
     while True:
         text = []
-        # with open(os.path.join('/Users','default','Desktop','Projects', 'DEX-bot', 'venv', 'test.txt'), 'r') as f:
-        #     text = f.read()
-        text = DEX.aggregator()
+        try:
+            text = DEX.aggregator()
+        except:
+            time.sleep(90)
+            text = DEX.aggregator()
         print('text = ', text)
+        # преобразование связки в удобный вид для вывода одним сообщением
+        format_text = ''
+        for text_str in text:
+            format_text += text_str
 
         # РАССЫЛКА СООБЩЕНИЙ ВСЕМ ПОЛЬЗОВАТЕЛЯМ БОТА
         user_id_tuple = db.user_das()
+        print(user_id_tuple)
         for user_id in user_id_tuple[0]:
-            await bot.send_message(user_id, text) # user_id[0] потому, что данные приходят в формате (237912374, )
-            await asyncio.sleep(10)
+            await bot.send_message(user_id, format_text) # user_id[0] потому, что данные приходят в формате (237912374, )
+            await asyncio.sleep(60)
 
 if __name__ == "__main__":
     executor.start(dp, on_startup())

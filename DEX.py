@@ -74,9 +74,9 @@ def buy_and_sale(counter, alphabet_dict, bid_cells, sell_cells, data):
                         spread = float(spread[1:2])
 
                     if round(spread, 2) >= 1.00 and bid_str[3] != sell_str[3]:
-                        data.append(f'Покупка: {bid_str[0]} Цена: {bid_str[1]} Пара: {bid_str[3]} '
-                                    f'Продажа: {sell_str[0]} Цена: {sell_str[1]} Пара: {sell_str[3]} '
-                                    f'Спред: {spread}')
+                        data.append(f'Покупка: {bid_str[0]}\nЦена: {bid_str[1]}\nПара: {bid_str[3]}\n\n'
+                                    f'Продажа: {sell_str[0]}\nЦена: {sell_str[1]}\nПара: {sell_str[3]}\n\n'
+                                    f'Спред: {spread}\n------------------\n\n')
                         # print(i + 1, 'Покупка:', bid_str[0], end=' ')  # биржа
                         # print('Цена:', bid_str[1], end=' ')  # цена
                         # print('Пара:', bid_str[3])  # пара

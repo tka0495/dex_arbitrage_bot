@@ -12,7 +12,9 @@ class Database:
 
     def add_user(self, user_id):
         with self.connection:
-            return self.cursor.execute("INSERT INTO OR REPLACE INTO 'users' ('user_id') VALUES (?)", (user_id,))
+            return self.cursor.execute("INSERT INTO 'users' ('user_id') VALUES (?)", (user_id,))
+###OR REPLACE INTO
+
 
     def user_das(self):
         with self.connection:
