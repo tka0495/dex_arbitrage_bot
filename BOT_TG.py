@@ -18,7 +18,7 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-TOKEN = '5979449278:AAEwnbR621lcx7K4LrQGr2XaBzsjnu8Y-FA'
+TOKEN = ''
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 db = Database('database.db')
@@ -56,7 +56,7 @@ async def on_startup():
         user_id_tuple = db.user_das()
         print(user_id_tuple)
         for user_id in user_id_tuple[0]:
-            await bot.send_message(user_id, format_text) # user_id[0] потому, что данные приходят в формате (237912374, )
+            await bot.send_message(user_id, format_text) # user_id[0] потому, что данные приходят в формате [(237912374, )]
             await asyncio.sleep(60)
 
 if __name__ == "__main__":
