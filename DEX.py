@@ -10,7 +10,7 @@ import os
 
 # ПОДКЛЮЧЕНИЕ К API (СТАНДАРТНОЕ)
 CREDENTIALS_FILE = '/Users/default/Desktop/Projects/DEX-bot/credentials.json'
-spreadsheet_id = '16hZdiEzBCxmf8TjQZuLfPQCLJ-a-xCdxeTJmGnTX7oE'
+spreadsheet_id = ''
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name(
     CREDENTIALS_FILE,
