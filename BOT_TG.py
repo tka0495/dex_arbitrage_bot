@@ -5,6 +5,8 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
 import DEX
 from db import Database
 import datetime
@@ -18,10 +20,11 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-TOKEN = ''
+TOKEN = '5979449278:AAEwnbR621lcx7K4LrQGr2XaBzsjnu8Y-FA'
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 db = Database('database.db')
+scheduler = AsyncIOScheduler()
 
 
 @dp.message_handler(commands=['start'])
@@ -37,31 +40,86 @@ async def start(message: types.Message):
         #     await asyncio.sleep(10)
 
 
-@dp.message_handler()
-async def on_startup():
-    while True:
-        text = []
-        try:
-            text = DEX.aggregator()
-        except:
-            time.sleep(90)
-            text = DEX.aggregator()
-        print('text = ', text)
-        # преобразование связки в удобный вид для вывода одним сообщением
-        format_text = ''
-        for text_str in text:
-            format_text += text_str
 
-        # РАССЫЛКА СООБЩЕНИЙ ВСЕМ ПОЛЬЗОВАТЕЛЯМ БОТА
-        user_id_tuple = db.user_das()
-        print(user_id_tuple)
-        for user_id in user_id_tuple[0]:
-            await bot.send_message(user_id, format_text) # user_id[0] потому, что данные приходят в формате [(237912374, )]
-            await asyncio.sleep(60)
+
+async def send_message_to_users(dp: Dispatcher):
+    try:
+        text = DEX.aggregator()
+    except:
+        time.sleep(90)
+        text = DEX.aggregator()
+    if len(text) > 0:
+        print('[+] Data is True.', text)
+    else:
+        print('[-] Data is False. Waiting please!')
+    # преобразование связки в удобный вид для вывода одним сообщением
+    if len(text) > 0:
+        format_text = 'ДОСТУПНЫЕ СВЯЗКИ:\n\n'
+    else:
+        format_text = 'В данный момент связок нет! Ожидайте.'
+    for text_str in text:
+        format_text += text_str
+
+    # РАССЫЛКА СООБЩЕНИЙ ВСЕМ ПОЛЬЗОВАТЕЛЯМ БОТА
+    user_id_tuple = db.user_das()
+    print('[+] Users: ', user_id_tuple)
+    for user_id in user_id_tuple:
+        await bot.send_message(user_id[0], format_text)  # user_id[0] потому, что данные приходят в формате (237912374, )
+        # await asyncio.sleep(60)
+
+
+async def schedule_jobs(dp: Dispatcher):
+    scheduler.add_job(send_message_to_users, "interval", seconds=20, args=(dp,))
+
+async def on_startup(dp):
+    await schedule_jobs(dp)
+
 
 if __name__ == "__main__":
-    executor.start(dp, on_startup())
-    executor.start_polling(dp, skip_updates=True)
+    scheduler.start()
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
+
+
+
+# async def schedule_jobs(dp: Dispatcher):
+#     # ДЛЯ ТЕСТОВ
+#     # scheduler.add_job(send_message_to_users, "interval", seconds=20, args=(dp,))
+#     scheduler.add_job(create_actually_table, 'cron', day_of_week='mon-sat', hour=23, minute=8, end_date='2024-05-30')
+#     scheduler.add_job(create_actually_sheet, 'cron', day_of_week='mon-sat', hour=23, minute=9, end_date='2024-05-30')
+#     scheduler.add_job(send_message_to_users, 'cron', day_of_week='mon-sat', hour=23, minute=10, end_date='2024-05-30',
+#                       args=(dp,))
+#     scheduler.add_job(message_link_from_admin, 'cron', day_of_week='mon-sat', hour=23, minute=11, end_date='2024-05-30',
+#                       args=(dp,))
+#
+#     # РАБОЧИЕ ВАРИАНТЫ
+#     # scheduler.add_job(send_message_to_users, 'cron', day_of_week='mon-sat', hour=16, minute=29,
+#     #                   end_date='2024-05-30', args=(dp,))
+#     # scheduler.add_job(create_actually_table, 'cron', day_of_week='mon', hour=9, minute=00, end_date='2024-05-30')
+#     # scheduler.add_job(create_actually_sheet, 'cron', day_of_week='mon-fri', hour=17, minute=50, end_date='2024-05-30')
+#     # scheduler.add_job(message_link_from_admin, 'cron', day_of_week='mon-fri', hour=19, minute=00,
+#     #                   end_date='2024-05-30', args=(dp,))
+#
+#     # ПРИМЕР Запуск с Понедельника по Пятницу в 5:30 (утра) до 2021-05-30 00:00:00
+#     # scheduler.add_job(func, 'cron', day_of_week='mon-fri', hour=5, minute=30, end_date='2021-05-30')
+#
+#
+# #
+# async def on_startup(dp):
+#     await bot.send_message(config.ADMIN_USER_ID, MESSAGE_RESTART, reply_markup=types.ReplyKeyboardRemove())
+#     await schedule_jobs(dp)
+#
+#
+# if __name__ == "__main__":
+#     scheduler.start()
+#     executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
+
+
+
+
+
+
+
 
 
 
