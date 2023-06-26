@@ -1,4 +1,5 @@
 import asyncio
+import sqlite3
 import time
 
 from aiogram import Bot, types
@@ -20,7 +21,7 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-TOKEN = ''
+TOKEN = '5979449278:AAEwnbR621lcx7K4LrQGr2XaBzsjnu8Y-FA'
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 db = Database('database.db')
@@ -30,9 +31,12 @@ scheduler = AsyncIOScheduler()
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
     if message.chat.type == 'private':
-        # await bot.send_message(message.from_user.id, message.from_user.id)
-        if not db.user_exists(message.from_user.id):
-            db.add_user(message.from_user.id)
+        try:
+            if not db.user_exists(message.from_user.id):
+                await bot.send_message(message.from_user.id, 'Добро пожаловать!')
+                db.add_user(message.from_user.id)
+        except sqlite3.IntegrityError:
+            await bot.send_message(message.from_user.id, 'есть в БД')
         # while True:
         #     with open(os.path.join('/Users','default','Desktop','Projects', 'DEX-bot', 'venv', 'test.txt'), 'r') as f:
         #         text = f.read()
@@ -54,22 +58,23 @@ async def send_message_to_users(dp: Dispatcher):
         print('[-] Data is False. Waiting please!')
     # преобразование связки в удобный вид для вывода одним сообщением
     if len(text) > 0:
-        format_text = 'ДОСТУПНЫЕ СВЯЗКИ:\n\n'
+        format_text = '<b>ДОСТУПНЫЕ СВЯЗКИ:</b>\n\n'
     else:
         format_text = 'В данный момент связок нет! Ожидайте.'
     for text_str in text:
         format_text += text_str
+    format_text += '<b>TON Адрес для поддержки:</b> <code>EQASkuyQpOru2czLSmy9qng7ybGij-8-ey29K35jhylPjqd8</code>'
 
     # РАССЫЛКА СООБЩЕНИЙ ВСЕМ ПОЛЬЗОВАТЕЛЯМ БОТА
     user_id_tuple = db.user_das()
     print('[+] Users: ', user_id_tuple)
     for user_id in user_id_tuple:
-        await bot.send_message(user_id[0], format_text)  # user_id[0] потому, что данные приходят в формате (237912374, )
+        await bot.send_message(user_id[0], format_text, parse_mode="html")  # user_id[0] потому, что данные приходят в формате (237912374, )
         # await asyncio.sleep(60)
 
 
 async def schedule_jobs(dp: Dispatcher):
-    scheduler.add_job(send_message_to_users, "interval", seconds=20, args=(dp,))
+    scheduler.add_job(send_message_to_users, "interval", seconds=120, args=(dp,))
 
 async def on_startup(dp):
     await schedule_jobs(dp)
