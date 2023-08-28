@@ -21,7 +21,7 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-TOKEN = '5979449278:AAEwnbR621lcx7K4LrQGr2XaBzsjnu8Y-FA'
+TOKEN = ''
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
 db = Database('database.db')
